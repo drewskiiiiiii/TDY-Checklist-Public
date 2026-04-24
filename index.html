@@ -9,39 +9,20 @@
 <title>TDY Mission Checklist</title>
 <style>
   :root {
-    --green: #1D9E75;
-    --green-light: #E1F5EE;
-    --green-dark: #085041;
-    --amber: #BA7517;
-    --amber-light: #FAEEDA;
-    --blue: #185FA5;
-    --blue-light: #E6F1FB;
-    --coral: #993C1D;
-    --coral-light: #FAECE7;
-    --purple: #534AB7;
-    --purple-light: #EEEDFE;
-    --bg: #F5F5F0;
-    --surface: #FFFFFF;
-    --border: rgba(0,0,0,0.10);
-    --text: #1a1a1a;
-    --muted: #6b6b65;
+    /* Colors pulled directly from the uploaded image */
+    --primary: #1eb4f0;         /* Cyan border */
+    --primary-bg: rgba(30, 180, 240, 0.15);
+    --secondary: #9a38bd;       /* Purple plane */
+    --secondary-bg: rgba(154, 56, 189, 0.15);
+    --bg: #000000;              /* Black background */
+    --surface: #0a0a0a;         /* Slightly offset black for checklist cards */
+    --border: rgba(30, 180, 240, 0.35); /* Dimmed cyan for inactive borders */
+    --text: #ffffff;            /* White text */
+    --muted: #888888;
     --radius: 14px;
     --radius-sm: 8px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1a1a18;
-      --surface: #262622;
-      --border: rgba(255,255,255,0.10);
-      --text: #f0ede8;
-      --muted: #a0a098;
-      --green-light: #04342C;
-      --amber-light: #412402;
-      --blue-light: #042C53;
-      --coral-light: #4A1B0C;
-      --purple-light: #26215C;
-    }
-  }
+  
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html { height: 100%; }
   body {
@@ -55,7 +36,7 @@
   /* HEADER */
   .header {
     background: var(--surface);
-    border-bottom: 0.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
     padding: 16px 20px 12px;
     position: sticky;
     top: 0;
@@ -63,24 +44,15 @@
   }
   .header-top { display: flex; align-items: center; justify-content: space-between; }
   .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-  .header .mission-tag {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--green);
-    background: var(--green-light);
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
+  
   .progress-bar-wrap { margin-top: 10px; }
   .progress-stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
   .progress-track { background: var(--border); border-radius: 4px; height: 5px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+  .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
  
   /* RESET BUTTON */
   .reset-btn {
-    background: none; border: 0.5px solid var(--border);
+    background: none; border: 1px solid var(--border);
     color: var(--muted); font-size: 12px; padding: 4px 10px;
     border-radius: 20px; cursor: pointer; font-family: inherit;
   }
@@ -95,7 +67,7 @@
   .tabs::-webkit-scrollbar { display: none; }
   .tab {
     flex-shrink: 0;
-    border: 0.5px solid var(--border);
+    border: 1px solid var(--border);
     background: var(--surface);
     color: var(--muted);
     font-size: 13px; font-weight: 500;
@@ -112,8 +84,8 @@
     background: var(--border);
     transition: background 0.2s;
   }
-  .tab.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
-  .tab.active .tab-dot { background: var(--green); }
+  .tab.active { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+  .tab.active .tab-dot { background: var(--primary); }
   .tab:active { transform: scale(0.97); }
  
   /* SECTION */
@@ -131,7 +103,7 @@
   .check-item {
     display: flex; align-items: flex-start; gap: 12px;
     background: var(--surface);
-    border: 0.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 12px 14px;
     cursor: pointer;
@@ -155,8 +127,8 @@
     background: var(--bg);
   }
   .check-item.done .checkbox {
-    background: var(--green);
-    border-color: var(--green);
+    background: var(--primary);
+    border-color: var(--primary);
   }
   .checkmark { display: none; width: 11px; height: 8px; }
   .checkmark path { stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
@@ -179,7 +151,7 @@
     transition: border-color 0.2s;
   }
   .item-notes:focus {
-    border-color: var(--green);
+    border-color: var(--primary);
     border-style: solid;
   }
   .check-item.done .item-notes { opacity: 0.7; }
@@ -193,23 +165,11 @@
   }
   .group-header::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
  
-  /* PHASE BADGE */
-  .phase-badge {
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.6px; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 10px;
-    flex-shrink: 0; margin-top: 2px;
-  }
-  .badge-plan { background: var(--blue-light); color: var(--blue); }
-  .badge-pack { background: var(--amber-light); color: var(--amber); }
-  .badge-ops  { background: var(--purple-light); color: var(--purple); }
-  .badge-crit { background: var(--coral-light); color: var(--coral); }
- 
   /* BOTTOM NAV for phase overview */
   .phase-summary {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: var(--surface);
-    border-top: 0.5px solid var(--border);
+    border-top: 1px solid var(--border);
     padding: 10px 20px 28px;
     display: flex; justify-content: space-around;
   }
@@ -477,8 +437,6 @@ const SECTIONS = [
   }
 ];
  
-const BADGE_CLASS = { plan: 'badge-plan', pack: 'badge-pack', ops: 'badge-ops', crit: 'badge-crit' };
- 
 let state = {};
 let notes = {};
  
@@ -521,8 +479,8 @@ function updateProgress() {
   const planDone = planKeys.filter(k => state[k]).length;
   
   summaryEl.innerHTML = `
-    <div class="phase-stat"><div class="ps-num" style="color:var(--blue)">${planDone}/${planKeys.length}</div><div class="ps-label">Ops Tasks</div></div>
-    <div class="phase-stat"><div class="ps-num" style="color:var(--green)">${done}/${all.length}</div><div class="ps-label">Total Done</div></div>
+    <div class="phase-stat"><div class="ps-num" style="color:var(--secondary)">${planDone}/${planKeys.length}</div><div class="ps-label">Ops Tasks</div></div>
+    <div class="phase-stat"><div class="ps-num" style="color:var(--primary)">${done}/${all.length}</div><div class="ps-label">Total Done</div></div>
   `;
  
   // Update tab dots
@@ -532,7 +490,7 @@ function updateProgress() {
     const sDone = sKeys.filter(k => state[k]).length;
     const tab = document.querySelector(`[data-tab="${s.id}"] .tab-dot`);
     if (tab) {
-      tab.style.background = sDone === sKeys.length && sKeys.length > 0 ? 'var(--green)' : 'var(--border)';
+      tab.style.background = sDone === sKeys.length && sKeys.length > 0 ? 'var(--primary)' : 'var(--border)';
     }
   });
 }
