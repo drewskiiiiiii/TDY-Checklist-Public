@@ -32,6 +32,18 @@
     min-height: 100vh;
     padding-bottom: 100px;
   }
+
+  /* NEW STYLING FOR THE TOP BANNER IMAGE */
+  .top-banner-image {
+    display: block;
+    width: 100%;
+    max-width: 1000px; /* Prevents it from getting too large on big screens */
+    margin: 0 auto;
+    height: auto;
+    max-height: 200px; /* Adjust height as needed */
+    object-fit: contain; /* Ensure the full image is visible */
+    border-bottom: 1px solid var(--border); /* Adds a subtle separator */
+  }
  
   /* HEADER */
   .header {
@@ -179,6 +191,8 @@
 </style>
 </head>
 <body>
+
+<img src="image_1.png" alt="91st Air Refueling Squadron Patch" class="top-banner-image">
  
 <div class="header">
   <div class="header-top">
@@ -480,7 +494,6 @@ function updateProgress() {
   
   summaryEl.innerHTML = `
     <div class="phase-stat"><div class="ps-num" style="color:var(--secondary)">${planDone}/${planKeys.length}</div><div class="ps-label">Ops Tasks</div></div>
-    <div class="phase-stat"><div class="ps-num" style="color:var(--primary)">${done}/${all.length}</div><div class="ps-label">Total Done</div></div>
   `;
  
   // Update tab dots
