@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TDY Checklist">
+<title>TDY Mission Checklist</title>
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #085041;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --coral: #993C1D;
+    --coral-light: #FAECE7;
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --bg: #F5F5F0;
+    --surface: #FFFFFF;
+    --border: rgba(0,0,0,0.10);
+    --text: #1a1a1a;
+    --muted: #6b6b65;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #262622;
+      --border: rgba(255,255,255,0.10);
+      --text: #f0ede8;
+      --muted: #a0a098;
+      --green-light: #04342C;
+      --amber-light: #412402;
+      --blue-light: #042C53;
+      --coral-light: #4A1B0C;
+      --purple-light: #26215C;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+ 
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .header .mission-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .progress-bar-wrap { margin-top: 10px; }
+  .progress-stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .progress-track { background: var(--border); border-radius: 4px; height: 5px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+ 
+  /* RESET BUTTON */
+  .reset-btn {
+    background: none; border: 0.5px solid var(--border);
+    color: var(--muted); font-size: 12px; padding: 4px 10px;
+    border-radius: 20px; cursor: pointer; font-family: inherit;
+  }
+  .reset-btn:active { opacity: 0.6; }
+ 
+  /* TAB NAV */
+  .tabs {
+    display: flex; overflow-x: auto; gap: 8px;
+    padding: 12px 20px 0;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0;
+    border: 0.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 13px; font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab .tab-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .tab.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
+  .tab.active .tab-dot { background: var(--green); }
+  .tab:active { transform: scale(0.97); }
+ 
+  /* SECTION */
+  .section { display: none; padding: 16px 20px 0; }
+  .section.active { display: block; }
+ 
+  .section-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 10px; margin-top: 4px;
+  }
+ 
+  /* CHECKLIST ITEMS */
+  .checklist { display: flex; flex-direction: column; gap: 2px; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .check-item:first-child { border-radius: var(--radius) var(--radius) var(--radius-sm) var(--radius-sm); }
+  .check-item:last-child { border-radius: var(--radius-sm) var(--radius-sm) var(--radius) var(--radius); }
+  .check-item:only-child { border-radius: var(--radius); }
+  .check-item:active { background: var(--bg); transform: scale(0.99); }
+  .check-item.done { opacity: 0.55; }
+  .check-item.done .item-label { text-decoration: line-through; color: var(--muted); }
+ 
+  .checkbox {
+    width: 22px; height: 22px; flex-shrink: 0;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+    transition: all 0.2s;
+    background: var(--bg);
+  }
+  .check-item.done .checkbox {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .checkmark { display: none; width: 11px; height: 8px; }
+  .checkmark path { stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .check-item.done .checkmark { display: block; }
+ 
+  .item-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .item-label { font-size: 15px; line-height: 1.4; }
+  
+  /* ITEM NOTES */
+  .item-notes {
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .item-notes:focus {
+    border-color: var(--green);
+    border-style: solid;
+  }
+  .check-item.done .item-notes { opacity: 0.7; }
+ 
+  /* GROUP HEADERS inside a section */
+  .group-header {
+    font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    padding: 14px 0 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .group-header::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
+ 
+  /* PHASE BADGE */
+  .phase-badge {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.6px; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 10px;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .badge-plan { background: var(--blue-light); color: var(--blue); }
+  .badge-pack { background: var(--amber-light); color: var(--amber); }
+  .badge-ops  { background: var(--purple-light); color: var(--purple); }
+  .badge-crit { background: var(--coral-light); color: var(--coral); }
+ 
+  /* BOTTOM NAV for phase overview */
+  .phase-summary {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 0.5px solid var(--border);
+    padding: 10px 20px 28px;
+    display: flex; justify-content: space-around;
+  }
+  .phase-stat { text-align: center; }
+  .phase-stat .ps-num { font-size: 20px; font-weight: 700; }
+  .phase-stat .ps-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+</style>
+</head>
+<body>
+ 
+<div class="header">
+  <div class="header-top">
+    <h1>TDY Checklist</h1>
+    <button class="reset-btn" onclick="resetAll()">Reset all</button>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-stats">
+      <span id="prog-label">0 of 0 complete</span>
+      <span id="prog-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+</div>
+ 
+<div class="tabs" id="tabs-nav"></div>
+ 
+<div id="sections-wrap"></div>
+ 
+<div class="phase-summary" id="phase-summary"></div>
+ 
+<script>
+const SECTIONS = [
+  {
+    id: 'mission-planning',
+    label: 'Mission Planning',
+    color: 'plan',
+    groups: [
+      {
+        title: 'Mission Docs',
+        items: [
+          'G2 Mission Setup Sheet (Remarks)',
+          '1801, Form 200',
+          'WX, NOTAMs, TOLD',
+          'Departure Procedures (+SDP)',
+          'FAA International NOTAMs',
+          'Foreign Clearance Guide (FCG)',
+          'Reporting Instructions',
+          'Area Planning (AP)',
+          'IFR Supplement',
+          'ASRR / Giant Reports (TT)',
+          'Supp Theater Info File (STIF)',
+          'CMD / Mission Spins (CP print)',
+          'Coronet Spins (tacc.us.af.mil)',
+          'Electronic Mission Folder (EMF)',
+          'AVANA Time confirmed',
+          'ALTRAV confirmed',
+        ]
+      },
+      {
+        title: 'Considerations',
+        items: [
+          'Emergency Airfields reviewed',
+          'Operating / Quiet Hours checked',
+          'Gross Weight calculated',
+          'Aircraft Configuration confirmed',
+          'CDT / FDP reviewed (202v3 AMCSUP Ch 3)',
+          'Ground Times / Crew Rest planned',
+        ]
+      },
+      {
+        title: 'Overseas / OCONUS',
+        items: [
+          'AE Information reviewed',
+          'Local IFG / Arrival Guide printed',
+          'Print Airfield Diagrams',
+          'Release Space-A Seats?',
+          'Cargo / Pax Manifest (DD Form 2131)',
+          'Formation reviewed',
+          'Tactics reviewed',
+          'PPR Req submitted',
+          'MM Channel established',
+          'Guns (aircraft lock box or armory hrs)',
+          'Secrets / SKL (CP storage)',
+          'TDY Kit / Stratus Puck / PCMIA Cards',
+          'Current DAFIF / Next Cycle confirmed',
+          'Aero App Cycle confirmed',
+          'Courrier Letter (Security Mgr)',
+          'Aircrew Gouge (Ops, local area, etc)',
+          'Crew Qualification / Currency (Tactics)',
+          'Airfield Servicing Facilities / Equipment',
+          'Aircraft Parking / Security',
+          'Customs requirements reviewed',
+          'LRS A, B, or C Bags packed',
+          'AFE D Bags or AERPS Gear ready',
+        ]
+      },
+      {
+        title: 'Oceanic / Long Range',
+        items: [
+          'Oceanic Checklist (Goodreader)',
+          'Oceanic Plotting Chart',
+          'Equal Time Point (ETP) calculated',
+          'Divert Locations identified',
+          'NAT Track NOTAMs reviewed',
+          'DIPS checked',
+          'Coord INTEL / SERE Briefings',
+          'HF Radios, SATCOM, CPDLC (MX verified)',
+        ]
+      },
+    ]
+  },
+  {
+    id: 'pre-departure',
+    label: 'Pre-Departure',
+    color: 'ops',
+    groups: [
+      {
+        title: 'Crew Actions',
+        items: [
+          'TDY Group Text established',
+          'Crew Brief Time established',
+          'FCC Contact Info distributed',
+          'Out-Processing Checklist complete',
+          'Check MERS / Print ITS',
+          'DTS Authorization confirmed (per diem noted)',
+          'GTC Check',
+          'Tax Exempt Letter',
+          'Lodging Reservations confirmed',
+          'POV Long-term Parking arranged',
+          'U-Drive / Rental Car reserved',
+          'Destination WX checked',
+          'Flight Meals / Water arranged',
+        ]
+      },
+      {
+        title: 'Friends & Contacts',
+        items: [
+          'Friends / Contacts at Destination noted',
+          'Rally Plan established',
+          'Haircut',
+        ]
+      },
+    ]
+  },
+  {
+    id: 'day-of-flight',
+    label: 'Day of Flight',
+    color: 'crit',
+    groups: [
+      {
+        title: 'Pre-Flight Checks',
+        items: [
+          'Review / Initial Flight Authorizations',
+          'Make copies of FAs',
+          'NATO Orders (if req)',
+          'Download Crew Papers (IFM)',
+          'WX, NOTAMs, TOLD (Climbout Cap)',
+          'Training Folders — Instructors',
+          '1801 Filed with Base Ops',
+          'Formation Kneeboard / Coord Card',
+          'Cargo / Pax Status & Timing',
+          'Sign FCIFs / Read Files',
+          'ORM completed',
+        ]
+      },
+      {
+        title: 'EFBs',
+        items: [
+          'Current EPUBs (EFB Placard)',
+          'Current IOS loaded',
+          'Battery status checked',
+        ]
+      },
+      {
+        title: 'Aircraft / Gear',
+        items: [
+          'TDY Kit / Stratus Puck / PCMIA Cards loaded',
+          'Secrets / SKL loaded',
+          'Guns & GSA Lock secured',
+          'Water Jug loaded',
+          'Case of H2O from Pax Terminal',
+        ]
+      },
+      {
+        title: 'Mission Papers',
+        items: [
+          'ORM copy loaded',
+          'Form F copy loaded',
+          '781s copy loaded',
+          '791s copy loaded',
+          'Customs Forms (if req)',
+          'MARs copy loaded',
+        ]
+      },
+    ]
+  },
+  {
+    id: 'destination',
+    label: 'Destination',
+    color: 'ops',
+    groups: [
+      {
+        title: 'On Arrival',
+        items: [
+          'Contact TACC / C2 → LFA',
+          'Landing Fuel confirmed',
+          'Refueling Load sent to FCCs',
+          'Debrief with FCCs',
+          '781s, 791s, MARS, Dotsheet completed',
+          'Custom Forms (if req)',
+          'Download Cargo / Pax',
+          'Secrets → CP',
+          'Guns → Lock Box / Armory',
+          'Pickup U-Drive / Rental Car',
+          'Lodging Front Desk check-in',
+          'Rally Plan executed',
+          'Commissary Run',
+          'Charge Status Puck',
+        ]
+      },
+      {
+        title: 'Schedule Transport',
+        items: [
+          'Schedule Trans arranged',
+        ]
+      },
+    ]
+  },
+  {
+    id: 'next-leg',
+    label: 'Next Leg',
+    color: 'plan',
+    groups: [
+      {
+        title: 'Rerun TDY Checklist',
+        items: [
+          'Rerun TDY Checklist (if req)',
+          'Hotel Receipt (Taxes?) obtained',
+          'Schedule Trans arranged',
+          'Return U-Drive / Rental Car',
+          'Pickup Guns / Secrets',
+          'Shoppette Run',
+        ]
+      },
+    ]
+  },
+  {
+    id: 'rtb',
+    label: 'RTB',
+    color: 'plan',
+    groups: [
+      {
+        title: 'Return Actions',
+        items: [
+          'Download Cargo / Pax',
+          'MX Debrief completed',
+          'Post Mission PPW (781, 791, MARs, etc)',
+          'PMCR completed (202v3 AMCSUP 3.1.10.)',
+          'DTS Voucher submitted',
+          'Close MM Channel',
+          'Return Stratus, TDY Kit, Guns, Secrets',
+        ]
+      },
+    ]
+  }
+];
+ 
+const BADGE_CLASS = { plan: 'badge-plan', pack: 'badge-pack', ops: 'badge-ops', crit: 'badge-crit' };
+ 
+let state = {};
+let notes = {};
+ 
+function loadState() {
+  try { state = JSON.parse(localStorage.getItem('tdy_state') || '{}'); } catch(e) { state = {}; }
+  try { notes = JSON.parse(localStorage.getItem('tdy_notes') || '{}'); } catch(e) { notes = {}; }
+}
+function saveState() {
+  localStorage.setItem('tdy_state', JSON.stringify(state));
+  localStorage.setItem('tdy_notes', JSON.stringify(notes));
+}
+ 
+function itemKey(sectionId, groupTitle, item) {
+  return `${sectionId}||${groupTitle}||${item}`;
+}
+ 
+function getAllKeys() {
+  const keys = [];
+  SECTIONS.forEach(s => s.groups.forEach(g => g.items.forEach(i => keys.push(itemKey(s.id, g.title, i)))));
+  return keys;
+}
+ 
+function updateProgress() {
+  const all = getAllKeys();
+  const done = all.filter(k => state[k]).length;
+  const pct = all.length ? Math.round(done / all.length * 100) : 0;
+  document.getElementById('prog-label').textContent = `${done} of ${all.length} complete`;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+ 
+  // Update phase summary
+  const summaryEl = document.getElementById('phase-summary');
+  const planKeys = [];
+  SECTIONS.forEach(s => {
+    s.groups.forEach(g => g.items.forEach(i => {
+      const k = itemKey(s.id, g.title, i);
+      if (s.color === 'plan' || s.color === 'ops' || s.color === 'crit') planKeys.push(k);
+    }));
+  });
+  const planDone = planKeys.filter(k => state[k]).length;
+  
+  summaryEl.innerHTML = `
+    <div class="phase-stat"><div class="ps-num" style="color:var(--blue)">${planDone}/${planKeys.length}</div><div class="ps-label">Ops Tasks</div></div>
+    <div class="phase-stat"><div class="ps-num" style="color:var(--green)">${done}/${all.length}</div><div class="ps-label">Total Done</div></div>
+  `;
+ 
+  // Update tab dots
+  SECTIONS.forEach(s => {
+    const sKeys = [];
+    s.groups.forEach(g => g.items.forEach(i => sKeys.push(itemKey(s.id, g.title, i))));
+    const sDone = sKeys.filter(k => state[k]).length;
+    const tab = document.querySelector(`[data-tab="${s.id}"] .tab-dot`);
+    if (tab) {
+      tab.style.background = sDone === sKeys.length && sKeys.length > 0 ? 'var(--green)' : 'var(--border)';
+    }
+  });
+}
+ 
+function toggleItem(key, el) {
+  state[key] = !state[key];
+  saveState();
+  if (state[key]) el.classList.add('done'); else el.classList.remove('done');
+  updateProgress();
+}
+ 
+function resetAll() {
+  if (!confirm('Reset all checklist items and clear notes?')) return;
+  state = {};
+  notes = {};
+  saveState();
+  document.querySelectorAll('.check-item.done').forEach(el => el.classList.remove('done'));
+  document.querySelectorAll('.item-notes').forEach(input => input.value = '');
+  updateProgress();
+}
+ 
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.dataset.section === id));
+}
+ 
+function build() {
+  loadState();
+  const tabsNav = document.getElementById('tabs-nav');
+  const wrap = document.getElementById('sections-wrap');
+ 
+  SECTIONS.forEach((s, si) => {
+    // Tab
+    const tab = document.createElement('button');
+    tab.className = 'tab' + (si === 0 ? ' active' : '');
+    tab.dataset.tab = s.id;
+    tab.innerHTML = `<span class="tab-dot"></span>${s.label}`;
+    tab.addEventListener('click', () => switchTab(s.id));
+    tabsNav.appendChild(tab);
+ 
+    // Section
+    const section = document.createElement('div');
+    section.className = 'section' + (si === 0 ? ' active' : '');
+    section.dataset.section = s.id;
+ 
+    s.groups.forEach(g => {
+      const gh = document.createElement('div');
+      gh.className = 'group-header';
+      gh.textContent = g.title;
+      section.appendChild(gh);
+ 
+      const cl = document.createElement('div');
+      cl.className = 'checklist';
+ 
+      g.items.forEach(item => {
+        const key = itemKey(s.id, g.title, item);
+        const row = document.createElement('div');
+        row.className = 'check-item' + (state[key] ? ' done' : '');
+
+        const noteVal = notes[key] || '';
+        const noteHtml = `<input type="text" class="item-notes" placeholder="Notes..." value="${noteVal.replace(/"/g, '&quot;')}">`;
+
+        row.innerHTML = `
+          <div class="checkbox">
+            <svg class="checkmark" viewBox="0 0 11 8"><path d="M1 4l3 3 6-6"/></svg>
+          </div>
+          <div class="item-content">
+            <span class="item-label">${item}</span>
+            ${noteHtml}
+          </div>
+        `;
+        
+        // Prevent toggle when clicking inside the text input
+        row.addEventListener('click', (e) => {
+          if (e.target.classList.contains('item-notes')) return;
+          toggleItem(key, row);
+        });
+
+        // Add auto-save listener for notes
+        const noteInput = row.querySelector('.item-notes');
+        noteInput.addEventListener('input', (e) => {
+          notes[key] = e.target.value;
+          saveState();
+        });
+        
+        cl.appendChild(row);
+      });
+ 
+      section.appendChild(cl);
+    });
+ 
+    wrap.appendChild(section);
+  });
+ 
+  updateProgress();
+}
+ 
+build();
+</script>
+</body>
+</html>
